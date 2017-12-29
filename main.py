@@ -5,16 +5,13 @@ import time
 import threading
 
 def createMap():
-    """"A simple example of how to use the ShowMap class"""
     showGUI = True  # set this to False if you run in putty
     # use the same no. of rows and cols in map and grid:
 
-    # create a grid with all cells=7 (unexplored) as numpy matrix:
-
     robot = Robot()
-    origin = (-5.0,-5.0)
-    end = (5.0,5.0)
-    grid = Grid(origin, end, 20, robot)
+    origin = (-1.0, -1.0)
+    end = (10.0, 10.0)
+    grid = Grid(origin, end, 20, robot) #20 pixels per meter
     map = ShowMap(grid.dimensions[0], grid.dimensions[1], showGUI)
 
     # Max grid value
@@ -22,13 +19,10 @@ def createMap():
 
     start_time = time.time()
     while(True):
-
         # Position of the robot in the grid (red dot)
-
         (robotRow, robotCol) = grid.coordinateToGrid((robot.getPosition()[0] - origin[0], robot.getPosition()[1] - origin[1]))
 
         # Update the grid
-
         grid.scanArea()
 
         map.updateMap(grid.grid, maxVal, robotRow, robotCol)
