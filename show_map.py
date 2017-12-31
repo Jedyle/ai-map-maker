@@ -9,7 +9,7 @@ Author Peter Hohnloser
 """
 
 class ShowMap(object):
-    def __init__(self, gridHeight, gridWidth, showGUI):
+    def __init__(self, gridHeight, gridWidth, showGUI, mapName = 'map.png'):
         """
         Constructor for ShowMap
 
@@ -24,7 +24,7 @@ class ShowMap(object):
         import matplotlib.pyplot as plt
 
         self.saveMapTime = 5.0
-        self.mapName = 'map.png'
+        self.mapName = mapName
         self.first = True
         self.__robot_size = 6
         self.__size = (gridHeight, gridWidth)
