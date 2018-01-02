@@ -9,11 +9,10 @@ class WaveFront:
         self.cspace = cspace
         self.goal = goalpoint
         self.wavegrid = self.createWaveGrid(goalpoint)
-        #print self.wavegrid
 
     def getNeighborsToUpdate(self, grid, point):
         (xp, yp) = point
-        gridneighbors = getLineNeighbors(point, grid.shape)
+        gridneighbors = getAllNeighbors(point, grid.shape)
         neighborsToChange = []
         for (x, y) in gridneighbors:
             if ((grid[x][y] == 0 and self.cspace[x][y] != INFINITE_COND) or (grid[xp][yp] + self.cspace[x][y] + 1 < grid[x][y])):
@@ -24,28 +23,26 @@ class WaveFront:
         return neighborsToChange
 
     def spreadWave(self, grid, goal): #BFS algorithm to spread the wave in the wavegrid
-        (xg, yg) = goal
         neighbors = self.getNeighborsToUpdate(grid, goal)
         while(neighbors):
             (goal, point) = neighbors.pop(0)
             (xg, yg) = goal
             (x,y) = point
-            if ((grid[xg][yg] + self.cspace[x][y] + 1 < grid[x][y]) or (grid[x][y] == 0)):
-                grid[x][y] = grid[xg][yg] + int(self.cspace[x][y]) + 1
+            if ((grid[xg][yg] + (self.cspace[x][y]+1)*distance((x,y), (xg,yg)) < grid[x][y]) or (abs(grid[x][y]) <= 10**(-6))):
+                grid[x][y] = grid[xg][yg] + (self.cspace[x][y]+1)*distance((x, y), (xg, yg))
                 neighbors.extend(self.getNeighborsToUpdate(grid, point))
         return neighbors
 
 
     def createWaveGrid(self, goal):
-        grid = np.zeros(self.cspace.shape, dtype=int)
-        grid[goal[0]][goal[1]] = 1
+        grid = np.zeros(self.cspace.shape, dtype=float)
+        grid[goal[0]][goal[1]] = 1.0
         self.spreadWave(grid, goal)
         return grid
 
 
     def shortestPath(self, start):
         (xs, ys) = start
-
         current = start
         path = [current]
         if (self.wavegrid[xs][ys] <= 0):
@@ -53,11 +50,12 @@ class WaveFront:
             return []
         else:
             while(current != self.goal):
-                current = min(getLineNeighbors(current, self.wavegrid.shape), key=lambda (x,y): positiveOrInfinity(self.wavegrid[x][y]))
+                current = min(getAllNeighbors(current, self.wavegrid.shape), key=lambda (x,y): positiveOrInfinity(self.wavegrid[x][y]))
                 path.append(current)
         return path
 
 """
+np.set_printoptions(precision = 2)
 cspace = np.zeros((10,10))
 cspace[9][8] = INFINITE_COND
 cspace[8][9] = 15
@@ -86,5 +84,4 @@ print wave.cspace
 print wave.wavegrid
 print wave.shortestPath((0,9))
 print wave.shortestPath((0,6))
-
 """

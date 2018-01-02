@@ -1,6 +1,15 @@
+import numpy as np
+
 INFINITE_COND = 1000
 OBSTACLE_VAL = -1
 WAVEGRID_INFTY = 100000
+
+def distance(a, b):
+    return np.sqrt((a[0]-b[0])**2 + (a[1] - b[1])**2)
+
+def calcangle(tuple1, tuple2):
+    return np.arctan2(tuple2[1], tuple2[0]) - np.arctan2(tuple1[1], tuple1[0])
+
 
 def getAllNeighbors(point, shape, diameter = 1):
     (row, col) = shape
@@ -32,7 +41,7 @@ def positiveOrInfinity(number):
         return number
 
 
-def getObstaclePoints(grid, limitval=40.0):
+def getObstaclePoints(grid, limitval=49.0):
     (row, col) = grid.shape
     obstacles = []
     for i in range(row):
