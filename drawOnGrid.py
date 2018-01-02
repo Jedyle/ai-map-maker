@@ -1,6 +1,5 @@
 import numpy as np
 
-
 """
 Draws a flat triangle (regarding the y axis) that has its base downwards
 Return : list of coordinates of the grid representing the filled triangle

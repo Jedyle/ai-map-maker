@@ -50,6 +50,7 @@ class WaveFront:
             return []
         else:
             while(current != self.goal):
+                print "kek"
                 current = min(getAllNeighbors(current, self.wavegrid.shape), key=lambda (x,y): positiveOrInfinity(self.wavegrid[x][y]))
                 path.append(current)
         return path

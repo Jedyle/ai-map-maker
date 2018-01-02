@@ -75,13 +75,15 @@ def exploreArea(lowLeft, upRight):
 
     print "Initializing"
 
-    boundaries = frontier.extractFrontiers(cspace.grid, minlen = 15)
+    boundaries = frontier.extractFrontiers(cspace.grid, minlen = 10)
     while boundaries: #while not empty
         (robotRow, robotCol) = cspace.coordinateToGrid((robot.getPosition()[0], robot.getPosition()[1]))
         front = frontier.biggestFrontier(boundaries)
         centroid = frontier.computeCentroid(front, cspace.grid)
-        #print "Next point", cspace.gridToCoordinate(centroid)
+        print "Next point", cspace.gridToCoordinate(centroid)
         while(distance(robot.getPosition(), cspace.gridToCoordinate(centroid)) > 1.0):
+            if (frontier.getState(centroid, cspace.grid) != frontier.EMPTY):
+                centroid = frontier.computeCentroid(front, cspace.grid)
             condSpace = conductivity.createGrid(cspace.grid)
             wavefront = WaveFront(centroid, condSpace)
             spath = wavefront.shortestPath((robotRow, robotCol))

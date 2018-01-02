@@ -35,9 +35,10 @@ class Grid():
             angle = i - breadth
             s = scan[i]
 
+            maxRange = 2*s
             # The following calculus give the relative coordinates (robot coord) of the vertices of the triangle we create
-            (x1, y1) = (s * (-np.sin((angle + self.lobeangle ) * np.pi / 180)), s * (np.cos((angle + self.lobeangle) * np.pi / 180)))
-            (x2, y2) = (s * (-np.sin((angle - self.lobeangle) * np.pi / 180)), s * (np.cos((angle - self.lobeangle) * np.pi / 180)))
+            (x1, y1) = (maxRange * (-np.sin((angle + self.lobeangle ) * np.pi / 180)), maxRange * (np.cos((angle + self.lobeangle) * np.pi / 180)))
+            (x2, y2) = (maxRange * (-np.sin((angle - self.lobeangle) * np.pi / 180)), maxRange * (np.cos((angle - self.lobeangle) * np.pi / 180)))
 
             #switch from robot the world coordinate
             (xw1, yw1) = toWorldCoordinates(x1, y1, robotpos, headingangle)
