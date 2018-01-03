@@ -4,6 +4,7 @@ import time
 import frontier
 import conductivity
 from gridutilities import *
+import pathTracking as pt
 
 
 """
@@ -55,7 +56,16 @@ def createMap():
         print("Cond map updated")
 """
 
+def goTo(path, grid):
+    algorithm = pt.PurePursuit()
+    if (path):
+        print "Point to go : ", path[len(path) - 1]
+        print "Current location : ", grid.robot.getPosition()
+        print path
+        grid.robot.postSpeed(0, 0)
+        algorithm.followPath(path)
 
+"""
 def goTo(path, grid, mapGui):
     if (path):
         print "Point to go : ", path[len(path)-1]
@@ -63,38 +73,80 @@ def goTo(path, grid, mapGui):
     grid.scanArea()
     (robotRow, robotCol) = grid.coordinateToGrid((grid.robot.getPosition()[0], grid.robot.getPosition()[1]))
     mapGui.updateMap(grid.grid, 100, robotRow, robotCol)
+"""
+
+def scanAllAround(grid, mapGui):
+    grid.robot.postSpeed(0.0, 0.0)
+    time.sleep(0.1)
+    #grid.scanArea()
+    grid.scanArea()
+    #grid.robot.postSpeed(1.0, 0.0)
+    #time.sleep(2)
+    #grid.robot.postSpeed(0.0, 0.0)
+    #grid.scanArea()
+    #grid.scanArea()
+    (robotRow, robotCol) = grid.coordinateToGrid((grid.robot.getPosition()[0], grid.robot.getPosition()[1]))
+    mapGui.updateMap(grid.grid, 100, robotRow, robotCol)
 
 
 def exploreArea(lowLeft, upRight):
     showGui = True
     robot = Robot()
-    cspace = Grid(lowLeft, upRight, 10, robot)
+
+    width = upRight[0] - lowLeft[0] #x
+    height = upRight[1] - lowLeft[1] #y
+
+    print robot.getPosition()
+    cspace = Grid(lowLeft, upRight, 200.0/max(width, height), robot)
 
     map = ShowMap(cspace.dimensions[0], cspace.dimensions[1], showGui)
-    cspace.scanArea()
+
+    mindist = 0.5*max(width, height)/10
 
     print "Initializing"
 
-    boundaries = frontier.extractFrontiers(cspace.grid, minlen = 10)
+    scanAllAround(cspace, map)
+    noGoZones = []
+    boundaries = frontier.filterNotExplored(frontier.extractFrontiers(cspace.grid, minlen=15), noGoZones, cspace.grid)
     while boundaries: #while not empty
         (robotRow, robotCol) = cspace.coordinateToGrid((robot.getPosition()[0], robot.getPosition()[1]))
-        front = frontier.biggestFrontier(boundaries)
-        centroid = frontier.computeCentroid(front, cspace.grid)
+        (front, centroid) = frontier.biggestFrontier(boundaries)
         print "Next point", cspace.gridToCoordinate(centroid)
-        while(distance(robot.getPosition(), cspace.gridToCoordinate(centroid)) > 1.0):
-            if (frontier.getState(centroid, cspace.grid) != frontier.EMPTY):
-                centroid = frontier.computeCentroid(front, cspace.grid)
+        tries = 0
+        outloop = False
+        while (not outloop):
+            (robotRow, robotCol) = cspace.coordinateToGrid((robot.getPosition()[0], robot.getPosition()[1]))
             condSpace = conductivity.createGrid(cspace.grid)
             wavefront = WaveFront(centroid, condSpace)
             spath = wavefront.shortestPath((robotRow, robotCol))
-            wcpath = []
-            for point in spath:
-                wcpath.append(cspace.gridToCoordinate(point))
-            goTo(wcpath, cspace, map) #coucou dorian c'est pour toi ici :)
-        boundaries = frontier.extractFrontiers(cspace.grid, minlen=20)
-        cspace.scanArea()
+            if (not spath): #empty
+                cspace.grid[centroid[0]][centroid[1]] = 0.9*100
+                for (x,y) in getAllNeighbors(centroid, cspace.grid.shape):
+                    cspace.grid[x][y] = 0.9*100
+                outloop = True
+            elif (not frontier.isDoable(spath, cspace.grid)): #if the robot can't follow the path without hitting an obstacle
+                cspace.grid[centroid[0]][centroid[1]] = 0.9 * 100
+                print "Path not practicable"
+                for (x, y) in front:
+                    cspace.grid[x][y] = 0.5*100
+                outloop = True
+            else:
+                wcpath = []
+                for point in spath:
+                    wcpath.append(cspace.gridToCoordinate(point))
+                goTo(wcpath, cspace)
+                scanAllAround(cspace, map)
+                if distance(robot.getPosition(), cspace.gridToCoordinate(centroid)) >= mindist: #fail
+                    tries += 1
+            if (distance(robot.getPosition(), cspace.gridToCoordinate(centroid)) <= mindist) or tries >= 3:
+                noGoZones.append(centroid)
+                outloop = True
+                print "centroid ", centroid, "no go zone"
+            print "Tries : ", tries
+        boundaries = frontier.filterNotExplored(frontier.extractFrontiers(cspace.grid, minlen=15), noGoZones, cspace.grid)
+        scanAllAround(cspace, map)
 
 
 if __name__ == '__main__':
     print 'Sending commands to MRDS server'
-    exploreArea((-1.0, -1.0), (10.0, 10.0))
+    exploreArea((-50.0, -50.0), (50.0, 50.0))

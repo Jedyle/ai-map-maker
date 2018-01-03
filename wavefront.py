@@ -45,12 +45,13 @@ class WaveFront:
         (xs, ys) = start
         current = start
         path = [current]
+        print "Computing path..."
         if (self.wavegrid[xs][ys] <= 0):
             print "No path from ", start, " to ", self.goal
             return []
         else:
             while(current != self.goal):
-                print "kek"
+                print current, self.goal
                 current = min(getAllNeighbors(current, self.wavegrid.shape), key=lambda (x,y): positiveOrInfinity(self.wavegrid[x][y]))
                 path.append(current)
         return path

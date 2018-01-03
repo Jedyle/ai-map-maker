@@ -15,18 +15,20 @@ class Grid():
 
         #Data for Bayesian laser model
         self.lobeangle = 1.0*20.0/self.pixpermeter #for scanning
-        self.maxGridRange = 20 * self.pixpermeter #max scanning range relative to the grid (in pixels)
+        self.maxGridRange = 40 * self.pixpermeter #max scanning range relative to the grid (in pixels)
         self.region1semibreadth = 0.1 * self.pixpermeter # 1/2 breadth of region I in the laser model
         self.pmax = 0.98 #Pmax in laser model
 
 
-    def scanArea(self, breadth = 90):
+    def scanArea(self, breadth = 135):
         """
         Scan the robot laser data in an angle of 2*breadth
         :param breadth:
         :return:
         """
+        print "Scan"
         scan = self.robot.getLaser()['Echoes'][135-breadth:135+breadth]
+        print scan
         robotpos = self.robot.getPosition()
         headingvector = self.robot.getHeading()
         headingangle = self.robot.getHeadingAngle()
@@ -44,19 +46,11 @@ class Grid():
             (xw1, yw1) = toWorldCoordinates(x1, y1, robotpos, headingangle)
             (xw2, yw2) = toWorldCoordinates(x2, y2, robotpos, headingangle)
 
-            #translation of the referential, so that the origin corresponds to the lower left corn (self.origin)
-            """
-            v1 = (xw1 - self.origin[0], yw1 - self.origin[1])
-            v2 = (xw2 - self.origin[0], yw2 - self.origin[1])
-
-            vg1 = self.coordinateToGrid(v1)
-            vg2 = self.coordinateToGrid(v2)
-            """
-
             vg1 = self.coordinateToGrid((xw1, yw1))
             vg2 = self.coordinateToGrid((xw2, yw2))
 
             triangle = drawOnGrid.drawTriangle(pointorigin, vg1, vg2)
+            #print len(triangle)
 
             scanToGrid = s * self.pixpermeter #scanToGrid = scanned laser value converted into pixels
             for point in triangle:

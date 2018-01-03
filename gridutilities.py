@@ -41,7 +41,7 @@ def positiveOrInfinity(number):
         return number
 
 
-def getObstaclePoints(grid, limitval=49.0):
+def getObstaclePoints(grid, limitval=45.0):
     (row, col) = grid.shape
     obstacles = []
     for i in range(row):
@@ -49,7 +49,6 @@ def getObstaclePoints(grid, limitval=49.0):
             if grid[i][j] > limitval:
                 obstacles.append((i, j))
     return obstacles
-
 
 print getAllNeighbors((0,0), (5,5))
 print getAllNeighbors((4,4), (5,5))

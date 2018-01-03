@@ -10,17 +10,41 @@ def getState(point, grid, maxVal = 100):
     Classify a point as occupied, empty or unknown is the grid
     """
     (x,y) = point
-    if (grid[x][y] > 0.51*maxVal):
+    if (grid[x][y] > 0.60*maxVal):
         return OCCUPIED
-    elif (grid[x][y] < 0.49*maxVal):
+    elif (grid[x][y] < 0.40*maxVal):
         return EMPTY
     else:
         return UNKNOWN
 
+def isDoable(path, grid, diameter = 1):
+    nbErrors = 0
+    for (x,y) in path:
+        nbOccupied = 0
+        neighbors = getAllNeighbors((x,y), grid.shape, diameter = diameter)
+        for (xn, yn) in neighbors:
+            if (getState((xn,yn), grid) != EMPTY):
+                nbOccupied +=1
+        if (nbOccupied > 2):
+            nbErrors += 1
+    return nbErrors <= 5
 
 def biggestFrontier(frontlist):
-    return max(frontlist, key=lambda a: len(a))
+    return max(frontlist, key=lambda a: len(a[0]))
 
+def isCloseTo(centroid, pointlist, dist = 3.0):
+    for (x, y) in pointlist:
+        if distance(centroid, (x,y)) <= dist:
+            return True
+    return False
+
+def filterNotExplored(bound, pointlist, grid, dist = 3):
+    filter = []
+    for b in bound:
+        centroid = computeCentroid(b, grid)
+        if not isCloseTo(centroid, pointlist, dist = dist):
+            filter.append((b, centroid))
+    return filter
 
 def findFrontierPoints(grid):
     """
@@ -119,7 +143,7 @@ def findNearest(point, grid, state = EMPTY):
         (xcur, ycur) = neighbors.pop(0)
         if not tmpgrid[xcur][ycur]:
             if getState((xcur, ycur), grid) == state:
-                circle = getAllNeighbors((xcur, ycur), grid.shape)
+                circle = getAllNeighbors((xcur, ycur), grid.shape, diameter=5)
                 empty = True
                 for (x, y) in circle:
                     if getState((xcur, ycur), grid) != state:
