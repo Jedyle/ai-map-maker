@@ -92,6 +92,7 @@ def findFrontier(point, grid):
     neighbors = getAllNeighbors(point, grid.shape, diameter=2)
     for (x,y) in neighbors:
         if grid[x][y] == True:
+            #print x, y
             frontier.extend(findFrontier((x,y), grid))
     return frontier
 
@@ -153,7 +154,6 @@ def findNearest(point, grid, state = EMPTY):
             else:
                 neighbors.extend(getAllNeighbors((xcur, ycur), grid.shape))
                 tmpgrid[xcur][ycur] = True
-    print "No points with this state in the grid"
     return -1, -1
 
 
@@ -174,23 +174,3 @@ def computeCentroid(frontier, grid):
     yc = int(yc/n)
     return findNearest((xc, yc), grid, state=EMPTY)
 
-
-"""
-map = np.ones((10,10))*50.0
-map[0][5] = 100.0
-map[1][5] = 100.0
-map[2][5] = 100.0
-map[2][4] = 100.0
-
-map[0][6] = 0.0
-map[9][9] = 0.0
-map[8][7] = 0.0
-map[2][9] = 0.0
-
-print map
-print findNearest((0,0), map)
-print findNearest((9,0), map)
-print findNearest((5,0), map)
-print findNearest((2,7), map)
-print findNearest((0,6), map)
-"""

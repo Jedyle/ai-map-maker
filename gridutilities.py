@@ -49,9 +49,3 @@ def getObstaclePoints(grid, limitval=45.0):
             if grid[i][j] > limitval:
                 obstacles.append((i, j))
     return obstacles
-
-print getAllNeighbors((0,0), (5,5))
-print getAllNeighbors((4,4), (5,5))
-print getAllNeighbors((1,1), (5,5))
-print getAllNeighbors((2,0), (5,5))
-print getAllNeighbors((9,0), (5,5))

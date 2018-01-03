@@ -2,6 +2,7 @@ import math
 import time
 from robot import *
 from gridutilities import *
+import random
 
 """
 Represents a 2D point
@@ -34,22 +35,13 @@ class PathFollowAlgorithm(object):
     Updates the position of the robot
     """
 
-    def is_collision(self, point):
-        echoes = self.robot.getLaser()['Echoes']
-        angle = self.calcAngle(point)
-        echo_index = int(135 + angle*180/math.pi)
-        for i in range(echo_index - 40, echo_index + 40):
-            if i >= 0 and i <= 270:
-                if echoes[i] - distance(point, self.position) < 0:
-                    return True
-        return False
 
-    def is_collision_bis(self):
-        breadth = 50
+    def is_collision(self):
+        breadth = 40
         echoes = self.robot.getLaser()['Echoes'][135-breadth:135+breadth]
         #print echoes[40:80]
         for signal in echoes :
-            if signal < 0.2*5:
+            if signal < 1.0:
                 return True
         return False
 
@@ -83,13 +75,8 @@ class PathFollowAlgorithm(object):
 
     def followPath(self, path):
         self.path = path
-        if (path):
-            print "Point to go : ", path[len(path) - 1]
         self.pointIndex = 0
-        start_time = time.time()
         self.run()
-        elapsed = time.time() - start_time
-        print "Elapsed: " + str(elapsed)
 
     """
     Calculates the error angle to the next point
@@ -150,11 +137,10 @@ class PurePursuit(PathFollowAlgorithm):
                 #time.sleep(0.5)
                 #self.robot.postSpeed(0.0, 0)
                 #print "Turning..."
-            if self.is_collision_bis():
-                self.robot.postSpeed(0, -0.5*10)
-                time.sleep(1.2)
-                self.robot.postSpeed(0, 0)
-                time.sleep(0.2)
+            if self.is_collision():
+                self.robot.postSpeed(0.0, -5.0)
+                time.sleep(1.5)
+                self.robot.postSpeed(0.0, 0.0)
                 return
             self.updatePosition()
             # calculate the next goal point based on the lookahead distance
@@ -173,4 +159,3 @@ class PurePursuit(PathFollowAlgorithm):
             angular_speed = (linear_speed / radius)
             self.robot.postSpeed(angular_speed, linear_speed)
         self.robot.postSpeed(0.0, 0.0)
-        print "out loop"

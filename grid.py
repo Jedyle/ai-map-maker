@@ -2,6 +2,7 @@ import numpy as np
 from gridutilities import *
 from robot import *
 import drawOnGrid
+import time
 
 class Grid():
     def __init__(self, originpoint, endpoint, pixpermeter, robot):
@@ -12,11 +13,10 @@ class Grid():
         self.dimensions = (self.coordinateToGrid(endpoint)[0] - self.coordinateToGrid(originpoint)[0], self.coordinateToGrid(endpoint)[1] - self.coordinateToGrid(originpoint)[1])
         self.grid = np.ones(shape = self.dimensions)*50.0 #matrix with 50 everywhere (unexplored)
 
-
         #Data for Bayesian laser model
-        self.lobeangle = 1.0*20.0/self.pixpermeter #for scanning
-        self.maxGridRange = 40 * self.pixpermeter #max scanning range relative to the grid (in pixels)
-        self.region1semibreadth = 0.1 * self.pixpermeter # 1/2 breadth of region I in the laser model
+        self.lobeangle = 2.0 #for scanning
+        self.maxGridRange = 100 * self.pixpermeter #max scanning range relative to the grid (in pixels)
+        self.region1semibreadth = max(1, 0.1 * self.pixpermeter) # 1/2 breadth of region I in the laser model
         self.pmax = 0.98 #Pmax in laser model
 
 
@@ -26,9 +26,8 @@ class Grid():
         :param breadth:
         :return:
         """
-        print "Scan"
+        elapsed = time.time()
         scan = self.robot.getLaser()['Echoes'][135-breadth:135+breadth]
-        print scan
         robotpos = self.robot.getPosition()
         headingvector = self.robot.getHeading()
         headingangle = self.robot.getHeadingAngle()
@@ -50,7 +49,6 @@ class Grid():
             vg2 = self.coordinateToGrid((xw2, yw2))
 
             triangle = drawOnGrid.drawTriangle(pointorigin, vg1, vg2)
-            #print len(triangle)
 
             scanToGrid = s * self.pixpermeter #scanToGrid = scanned laser value converted into pixels
             for point in triangle:
@@ -92,34 +90,6 @@ class Grid():
 
     def gridToCoordinate(self, coord):
         return ((coord[0]*1.0/self.pixpermeter)+self.origin[0], (coord[1]*1.0/self.pixpermeter)+self.origin[1])
-
-
-"""
-    #old version with prob = 0 or 1 (obstacle or no obstacle)
-    def scanArea(self, breadth = 45):
-        scan = self.robot.getLaser()['Echoes'][135-breadth:135+breadth]
-        print scan
-        robotpos = self.robot.getPosition()
-        headingvector = self.robot.getHeading()
-        headingangle = self.robot.getHeadingAngle()
-        origin = (robotpos[0]-self.origin[0], robotpos[1]-self.origin[1])
-        for i in range(len(scan)):
-            angle = i - breadth
-            xdest = scan[i]*(-np.sin(angle * np.pi / 180))
-            ydest = scan[i]*(np.cos(angle * np.pi / 180))
-            (xworld, yworld) = toWorldCoordinates(xdest, ydest, robotpos, headingangle)
-            destination = (xworld - self.origin[0], yworld - self.origin[1])
-            pointorigin = self.coordinateToGrid(origin)
-            pointdest = self.coordinateToGrid(destination)
-            line = drawOnGrid.drawLine(pointorigin, pointdest)
-            for point in line:
-                if not ((point[0] >= self.dimensions[0]) or (point[0] < 0) or (point[1] >= self.dimensions[1]) or (point[1] < 0)):
-                    self.grid[point[0]][point[1]] = 0
-            lastpoint = line[len(line)-1]
-            if not ((lastpoint[0] >= self.dimensions[0]) or (lastpoint[0] < 0) or (lastpoint[1] >= self.dimensions[1]) or (lastpoint[1] < 0)):
-                self.grid[lastpoint[0]][lastpoint[1]] = 100
-"""
-
 
 
 

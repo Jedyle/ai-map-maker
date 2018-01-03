@@ -4,11 +4,12 @@ from gridutilities import *
 
 class WaveFront:
 
-    def __init__(self, goalpoint, cspace):
+    def __init__(self, goalpoint, startpoint, cspace):
         self.i = 0
         self.cspace = cspace
         self.goal = goalpoint
-        self.wavegrid = self.createWaveGrid(goalpoint)
+        self.start = startpoint
+        self.wavegrid = self.createWaveGrid()
 
     def getNeighborsToUpdate(self, grid, point):
         (xp, yp) = point
@@ -22,68 +23,37 @@ class WaveFront:
                 grid[x][y] = OBSTACLE_VAL
         return neighborsToChange
 
-    def spreadWave(self, grid, goal): #BFS algorithm to spread the wave in the wavegrid
+    def spreadWave(self, grid, goal, start): #BFS algorithm to spread the wave in the wavegrid
         neighbors = self.getNeighborsToUpdate(grid, goal)
         while(neighbors):
             (goal, point) = neighbors.pop(0)
             (xg, yg) = goal
             (x,y) = point
-            if ((grid[xg][yg] + (self.cspace[x][y]+1)*distance((x,y), (xg,yg)) < grid[x][y]) or (abs(grid[x][y]) <= 10**(-6))):
+            if ((grid[xg][yg] + (self.cspace[x][y]+1)*distance((x,y), (xg,yg)) < grid[x][y]) or (abs(grid[x][y]) <= 10**(-4))):
                 grid[x][y] = grid[xg][yg] + (self.cspace[x][y]+1)*distance((x, y), (xg, yg))
                 neighbors.extend(self.getNeighborsToUpdate(grid, point))
-        return neighbors
+            if goal == start:
+                return
 
 
-    def createWaveGrid(self, goal):
+    def createWaveGrid(self):
         grid = np.zeros(self.cspace.shape, dtype=float)
-        grid[goal[0]][goal[1]] = 1.0
-        self.spreadWave(grid, goal)
+        grid[self.goal[0]][self.goal[1]] = 1.0
+        self.spreadWave(grid, self.goal, self.start)
         return grid
 
 
-    def shortestPath(self, start):
-        (xs, ys) = start
-        current = start
+    def shortestPath(self):
+        (xs, ys) = self.start
+        current = self.start
         path = [current]
-        print "Computing path..."
-        if (self.wavegrid[xs][ys] <= 0):
-            print "No path from ", start, " to ", self.goal
+        #print "Computing path..."
+        if (self.wavegrid[xs][ys] <= 0) or (self.wavegrid[self.goal[0]][self.goal[1]] <= 0):
+            #print "No path from ", self.start, " to ", self.goal
             return []
         else:
             while(current != self.goal):
-                print current, self.goal
                 current = min(getAllNeighbors(current, self.wavegrid.shape), key=lambda (x,y): positiveOrInfinity(self.wavegrid[x][y]))
                 path.append(current)
         return path
 
-"""
-np.set_printoptions(precision = 2)
-cspace = np.zeros((10,10))
-cspace[9][8] = INFINITE_COND
-cspace[8][9] = 15
-cspace[8][8] = 10
-cspace[0][5] = INFINITE_COND
-cspace[1][5] = INFINITE_COND
-cspace[2][5] = INFINITE_COND
-cspace[3][5] = INFINITE_COND
-cspace[3][6] = INFINITE_COND
-cspace[3][7] = INFINITE_COND
-cspace[2][7] = INFINITE_COND
-cspace[1][7] = INFINITE_COND
-cspace[0][7] = INFINITE_COND
-
-cspace[0][4] = 1
-cspace[1][4] = 1
-cspace[2][4] = 1
-cspace[3][4] = 1
-cspace[4][4] = 1
-cspace[4][5] = 1
-cspace[4][6] = 1
-cspace[4][7] = 1
-
-wave = WaveFront((0,0), cspace)
-print wave.cspace
-print wave.wavegrid
-print wave.shortestPath((0,9))
-print wave.shortestPath((0,6))
-"""

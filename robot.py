@@ -142,39 +142,3 @@ def qmult(q1, q2):
     return q
 
 
-"""
-if __name__ == '__main__':
-    robot = Robot()
-    print 'Sending commands to MRDS server', robot.MRDS_URL
-    createMap()
-    try:
-        print 'Telling the robot to go streight ahead.'
-        response = robot.postSpeed(0, 0.1)
-        print 'Waiting for a while...'
-        time.sleep(3)
-        print 'Telling the robot to go in a circle.'
-        response = robot.postSpeed(0.4, 0.1)
-    except UnexpectedResponse, ex:
-        print 'Unexpected response from server when sending speed commands:', ex
-
-    try:
-        laser = robot.getLaser()
-        print laser
-        laserAngles = robot.getLaserAngles()
-        print 'The rightmost laser bean has angle %.3f deg from x-axis (streight forward) and distance %.3f meters.' % (
-            laserAngles[0], laser['Echoes'][0]
-        )
-        print 'Beam 1: %.3f Beam 269: %.3f Beam 270: %.3f' % (
-            laserAngles[0] * 180 / pi, laserAngles[269] * 180 / pi, laserAngles[270] * 180 / pi)
-    except UnexpectedResponse, ex:
-        print 'Unexpected response from server when reading laser data:', ex
-
-    try:
-        pose = robot.getPose()
-        print 'Current position: ', pose['Pose']['Position']
-        for t in range(30):
-            print 'Current heading vector: X:{X:.3}, Y:{Y:.3}'.format(**robot.getHeading())
-            time.sleep(1)
-    except UnexpectedResponse, ex:
-        print 'Unexpected response from server when reading position:', ex
-"""
