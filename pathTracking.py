@@ -41,7 +41,7 @@ class PathFollowAlgorithm(object):
         echoes = self.robot.getLaser()['Echoes'][135-breadth:135+breadth]
         #print echoes[40:80]
         for signal in echoes :
-            if signal < 1.0:
+            if signal < 0.5:
                 return True
         return False
 

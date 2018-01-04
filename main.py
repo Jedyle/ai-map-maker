@@ -42,7 +42,7 @@ def exploreArea(lowLeft, upRight, url):
     iterationMax = 50
     i = 0
     while boundaries and i < iterationMax: #while not empty
-        #print i
+        print i
         (robotRow, robotCol) = cspace.coordinateToGrid((robot.getPosition()[0], robot.getPosition()[1]))
         (front, centroid) = frontier.biggestFrontier(boundaries)
         tries = 0
