@@ -21,5 +21,5 @@ def createGrid(grid):
     obstacles = getObstaclePoints(grid)
     for (x, y) in obstacles:
         cspace[x][y] = INFINITE_COND
-        assignCondValueToNeighbors((x, y), cspace, 1)
+        #assignCondValueToNeighbors((x, y), cspace, 1)
     return cspace

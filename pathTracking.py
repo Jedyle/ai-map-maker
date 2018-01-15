@@ -25,11 +25,12 @@ class Point:
         return "X: %.3f, Y: %.3f" % (self.x, self.y)
 
 class PathFollowAlgorithm(object):
-    def __init__(self):
+    def __init__(self, url):
         self.position = (0, 0)
         self.lookahead_dist = 0.8
         self.pointIndex = 0
-        self.robot = Robot()
+        self.robot = Robot(url = url)
+        self.collision_dist = 2.0
 
     """
     Updates the position of the robot
@@ -37,11 +38,10 @@ class PathFollowAlgorithm(object):
 
 
     def is_collision(self):
-        breadth = 40
+        breadth = 50
         echoes = self.robot.getLaser()['Echoes'][135-breadth:135+breadth]
-        #print echoes[40:80]
         for signal in echoes :
-            if signal < 0.5:
+            if signal < self.collision_dist:
                 return True
         return False
 
@@ -74,6 +74,7 @@ class PathFollowAlgorithm(object):
     """
 
     def followPath(self, path):
+        print path
         self.path = path
         self.pointIndex = 0
         self.run()
@@ -127,21 +128,20 @@ class PurePursuit(PathFollowAlgorithm):
     """
 
     def run(self):
-        self.lookahead_dist = 0.5*10 #0.8
-        linear_speed = 0.4*10 #1.2
+        self.lookahead_dist = 5.0 #0.8
+        linear_speed = 4.0 #1.2
         self.robot.postSpeed(0, 0)
         while not self.isFinished():
-            #while self.is_collision_bis(): #(next_point):
-                #print "Collision"
-                #self.robot.postSpeed(0.2, 0)
-                #time.sleep(0.5)
-                #self.robot.postSpeed(0.0, 0)
-                #print "Turning..."
             if self.is_collision():
                 self.robot.postSpeed(0.0, -5.0)
                 time.sleep(1.5)
                 self.robot.postSpeed(0.0, 0.0)
-                return
+                self.lookahead_dist /= 2
+                linear_speed /= 2
+                self.collision_dist /= 2
+                if (self.lookahead_dist <= 0.5 or linear_speed <= 0.2):
+                    self.collision_dist = 2.0
+                    return
             self.updatePosition()
             # calculate the next goal point based on the lookahead distance
             next_point = self.getNextPoint()

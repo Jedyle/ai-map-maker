@@ -15,12 +15,12 @@ class Grid():
 
         #Data for Bayesian laser model
         self.lobeangle = 2.0 #for scanning
-        self.maxGridRange = 100 * self.pixpermeter #max scanning range relative to the grid (in pixels)
+        self.maxGridRange = 60 * self.pixpermeter #max scanning range relative to the grid (in pixels)
         self.region1semibreadth = max(1, 0.1 * self.pixpermeter) # 1/2 breadth of region I in the laser model
-        self.pmax = 0.98 #Pmax in laser model
+        self.pmax = 0.95 #Pmax in laser model
 
 
-    def scanArea(self, breadth = 135):
+    def scanArea(self, breadth = 90):
         """
         Scan the robot laser data in an angle of 2*breadth
         :param breadth:
@@ -28,15 +28,13 @@ class Grid():
         """
         elapsed = time.time()
         scan = self.robot.getLaser()['Echoes'][135-breadth:135+breadth]
-        robotpos = self.robot.getPosition()
-        headingvector = self.robot.getHeading()
-        headingangle = self.robot.getHeadingAngle()
+        (robotpos, headingvector, headingangle) = (self.robot.getPosition(), self.robot.getHeading(), self.robot.getHeadingAngle())
         pointorigin = self.coordinateToGrid(robotpos)
         for i in range(len(scan)):
             angle = i - breadth
             s = scan[i]
 
-            maxRange = 2*s
+            maxRange = s+0.5
             # The following calculus give the relative coordinates (robot coord) of the vertices of the triangle we create
             (x1, y1) = (maxRange * (-np.sin((angle + self.lobeangle ) * np.pi / 180)), maxRange * (np.cos((angle + self.lobeangle) * np.pi / 180)))
             (x2, y2) = (maxRange * (-np.sin((angle - self.lobeangle) * np.pi / 180)), maxRange * (np.cos((angle - self.lobeangle) * np.pi / 180)))
@@ -58,6 +56,7 @@ class Grid():
                 bearing = calcangle(headingtuple, vectpoint)* 180 / np.pi
                 alpha = bearing - angle
                 self.assignProba(point, r, alpha, scanToGrid)
+        print "Time scan : ", elapsed - time.time()
 
     def assignProba(self, point, r, alpha, s):
         """
@@ -78,12 +77,14 @@ class Grid():
             pAnterior = self.grid[point[0]][point[1]]*1.0/100 #prob in this cell before the calculus (stored btw 0 and 100 in the grid)
             pNew = pocc * pAnterior / (pocc * pAnterior + pempty * (1 - pAnterior))
             self.grid[point[0]][point[1]] = 100*pNew
+            #self.grid[point[0]][point[1]] = 100
         else: #region I
             pocc = 0.5 * ( (self.maxGridRange - r)*1.0/self.maxGridRange + (self.lobeangle - abs(alpha))/self.lobeangle ) * self.pmax
             pempty = 1 - pocc
             pAnterior = self.grid[point[0]][point[1]]*1.0/100 #prob in this cell before the calculus (stored btw 0 and 100 in the grid)
             pNew = pocc * pAnterior / (pocc * pAnterior + pempty * (1 - pAnterior))
             self.grid[point[0]][point[1]] = 100*pNew
+            #self.grid[point[0]][point[1]] = 0
 
     def coordinateToGrid(self, coord): #transforms a coordinate into a position in the grid
         return (int(np.floor((coord[0]-self.origin[0]) * self.pixpermeter)), int(np.floor((coord[1]- self.origin[1])* self.pixpermeter)))

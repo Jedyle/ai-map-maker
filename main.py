@@ -6,12 +6,17 @@ import conductivity
 from gridutilities import *
 import pathTracking as pt
 import sys
+import threading
+import time
 
-def goTo(path, grid):
-    algorithm = pt.PurePursuit()
+
+
+
+def goTo(path, grid, mapGui, url):
+    algorithm = pt.PurePursuit(url)
     if (path):
-        grid.robot.postSpeed(0, 0)
         algorithm.followPath(path)
+        grid.robot.postSpeed(0, 0)
 
 def scanAllAround(grid, mapGui):
     grid.robot.postSpeed(0.0, 0.0)
@@ -66,7 +71,7 @@ def exploreArea(lowLeft, upRight, url):
                 wcpath = []
                 for point in spath:
                     wcpath.append(cspace.gridToCoordinate(point))
-                goTo(wcpath, cspace)
+                goTo(wcpath, cspace, map, url)
                 scanAllAround(cspace, map)
                 if distance(robot.getPosition(), cspace.gridToCoordinate(centroid)) >= mindist: #fail
                     tries += 1
