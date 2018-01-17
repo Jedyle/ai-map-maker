@@ -10,6 +10,23 @@ def distance(a, b):
 def calcangle(tuple1, tuple2):
     return np.arctan2(tuple2[1], tuple2[0]) - np.arctan2(tuple1[1], tuple1[0])
 
+def labelVisited(grid, point, label = True, diameter = 1):
+    (x, y) = point
+    (row, col) = grid.shape
+    if (x >= 0 and x < row and y >= 0 and y < col):
+        grid[x][y] = True
+        neighbors = getAllNeighbors(point, grid.shape, diameter=diameter)
+        for (xn, yn) in neighbors:
+            grid[xn][yn] = label
+
+def getNumberVisited(grid):
+    (row, col) = grid.shape
+    count = 0
+    for i in range(row):
+        for j in range(col):
+            if grid[i][j] == True:
+                count += 1
+    return count
 
 def getAllNeighbors(point, shape, diameter = 1):
     (row, col) = shape

@@ -8,7 +8,10 @@ class WaveFront:
         self.i = 0
         self.cspace = cspace
         self.goal = goalpoint
-        self.start = startpoint
+        (xs, ys) = startpoint
+        xs = max(0, min(xs, self.cspace.shape[0]-1))
+        ys = max(0, min(ys, self.cspace.shape[1]-1))
+        self.start = (xs, ys)
         self.wavegrid = self.createWaveGrid()
 
     def getNeighborsToUpdate(self, grid, point):
@@ -47,13 +50,13 @@ class WaveFront:
         (xs, ys) = self.start
         current = self.start
         path = [current]
-        #print "Computing path..."
         if (self.wavegrid[xs][ys] <= 0) or (self.wavegrid[self.goal[0]][self.goal[1]] <= 0):
-            #print "No path from ", self.start, " to ", self.goal
             return []
         else:
             while(current != self.goal):
-                current = min(getAllNeighbors(current, self.wavegrid.shape), key=lambda (x,y): positiveOrInfinity(self.wavegrid[x][y]))
-                path.append(current)
+                neigh = getAllNeighbors(current, self.wavegrid.shape)
+                if (len(neigh) != 0):
+                    current = min(neigh, key=lambda (x, y): positiveOrInfinity(self.wavegrid[x][y]))
+                    path.append(current)
         return path
 
