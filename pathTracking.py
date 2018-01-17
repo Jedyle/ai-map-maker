@@ -31,6 +31,9 @@ class PathFollowAlgorithm(object):
         self.pointIndex = 0
         self.robot = Robot(url = url)
         self.collision_dist = 2.0
+        self.finished = False
+        self.tries = 0
+        self.pointToAvoid = 0
 
     """
     Updates the position of the robot
@@ -38,12 +41,39 @@ class PathFollowAlgorithm(object):
 
 
     def is_collision(self):
-        breadth = 50
+        breadth = 20
         echoes = self.robot.getLaser()['Echoes'][135-breadth:135+breadth]
         for signal in echoes :
             if signal < self.collision_dist:
                 return True
         return False
+
+    def avoidObstacle(self, breadth = 80, nbzones = 5, distmin = 5):
+        self.tries += 1
+        print "Tries ", self.tries
+        if (self.tries > 10):
+            self.finished = True
+            self.robot.postSpeed(0,0)
+            return
+        echoes = self.robot.getLaser()['Echoes'][135-breadth:135+breadth]
+        free = [40.0 for i in range(nbzones)]
+        for i in range(nbzones):
+            for sensor in range(i*int((breadth*2)/nbzones), (i+1)*int((breadth*2)/nbzones)):
+                free[i] = min(free[i], echoes[sensor])
+        best = free.index(max(free))
+        if free[best] >= distmin:
+            angle = -breadth + int(breadth/nbzones) + best*int((breadth*2)/nbzones)
+            self.robot.postSpeed(angle, 0)
+            time.sleep(1)
+            self.robot.postSpeed(0, 1)
+            time.sleep(1)
+            self.robot.postSpeed(0, 0)
+        else:
+            self.robot.postSpeed(2.0, 0)
+            time.sleep(1)
+            self.robot.postSpeed(0,0)
+            self.avoidObstacle()
+            #self.finished = True
 
 
     def updatePosition(self):
@@ -66,8 +96,10 @@ class PathFollowAlgorithm(object):
     Returns true if the robot reached the goal
     """
 
-    def isFinished(self):
-        return self.pointIndex == len(self.path) - 1 and distance(self.position, (self.path[len(self.path) - 1])) <= 0.5
+    def isArrivedToPoint(self):
+        dist = distance(self.path[0], self.path[-1])
+        #print dist
+        return self.pointIndex == len(self.path) - 1 and distance(self.position, (self.path[len(self.path) - 1])) <= dist*0.1
 
     """
     Follows the path which is specified in the file with name: <file_name>
@@ -131,17 +163,10 @@ class PurePursuit(PathFollowAlgorithm):
         self.lookahead_dist = 5.0 #0.8
         linear_speed = 4.0 #1.2
         self.robot.postSpeed(0, 0)
-        while not self.isFinished():
+        while (not self.isArrivedToPoint()) and (not self.finished):
             if self.is_collision():
-                self.robot.postSpeed(0.0, -5.0)
-                time.sleep(1.5)
                 self.robot.postSpeed(0.0, 0.0)
-                self.lookahead_dist /= 2
-                linear_speed /= 2
-                self.collision_dist /= 2
-                if (self.lookahead_dist <= 0.5 or linear_speed <= 0.2):
-                    self.collision_dist = 2.0
-                    return
+                self.avoidObstacle()
             self.updatePosition()
             # calculate the next goal point based on the lookahead distance
             next_point = self.getNextPoint()
@@ -159,3 +184,4 @@ class PurePursuit(PathFollowAlgorithm):
             angular_speed = (linear_speed / radius)
             self.robot.postSpeed(angular_speed, linear_speed)
         self.robot.postSpeed(0.0, 0.0)
+        self.finished = True

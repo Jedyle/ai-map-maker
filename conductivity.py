@@ -1,7 +1,7 @@
 from gridutilities import *
 import numpy as np
 
-conductivityValues = [int(2 * INFINITE_COND * 1.0 / (1 + np.exp(i*1.0 / 2))) for i in range(10)]
+conductivityValues = [int(2 * INFINITE_COND * 1.0 / (1 + np.exp(i*1.0 / 2))) for i in range(5)]
 
 def assignCondValueToNeighbors(point, cspace, value):
     if (value != len(conductivityValues)):
@@ -21,5 +21,5 @@ def createGrid(grid):
     obstacles = getObstaclePoints(grid)
     for (x, y) in obstacles:
         cspace[x][y] = INFINITE_COND
-        #assignCondValueToNeighbors((x, y), cspace, 1)
+        assignCondValueToNeighbors((x, y), cspace, 1)
     return cspace

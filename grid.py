@@ -15,12 +15,13 @@ class Grid():
 
         #Data for Bayesian laser model
         self.lobeangle = 2.0 #for scanning
-        self.maxGridRange = 60 * self.pixpermeter #max scanning range relative to the grid (in pixels)
-        self.region1semibreadth = max(1, 0.1 * self.pixpermeter) # 1/2 breadth of region I in the laser model
+        self.maxGridRange = 40 * self.pixpermeter #max scanning range relative to the grid (in pixels)
+        #self.R = 80*self.pixpermeter
+        self.region1semibreadth = max(2, 0.1 * self.pixpermeter) # 1/2 breadth of region I in the laser model
         self.pmax = 0.95 #Pmax in laser model
 
 
-    def scanArea(self, breadth = 90):
+    def scanArea(self, breadth = 80):
         """
         Scan the robot laser data in an angle of 2*breadth
         :param breadth:
@@ -55,7 +56,8 @@ class Grid():
                 vectpoint = (point[0] - pointorigin[0], point[1] - pointorigin[1])
                 bearing = calcangle(headingtuple, vectpoint)* 180 / np.pi
                 alpha = bearing - angle
-                self.assignProba(point, r, alpha, scanToGrid)
+                if r < self.maxGridRange - 20*self.pixpermeter:
+                    self.assignProba(point, r, alpha, scanToGrid)
         print "Time scan : ", elapsed - time.time()
 
     def assignProba(self, point, r, alpha, s):
