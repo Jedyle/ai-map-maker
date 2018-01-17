@@ -53,7 +53,7 @@ def exploreArea(lowLeft, upRight, url):
     visitedGrid = np.zeros(cspace.grid.shape, dtype=bool)
     scanAllAround(cspace, map)
     (robotRow, robotCol) = cspace.coordinateToGrid((robot.getPosition()[0], robot.getPosition()[1]))
-    frontiers = frontier.extractFrontiers(cspace.grid, minlen=gridResolution/7, dist = 1)
+    frontiers = frontier.extractFrontiers(cspace.grid, minlen=gridResolution/8, dist = 1)
     boundaries = frontier.sortFrontiers(frontiers, (robotRow, robotCol), cspace.grid, visitedGrid)
     iterationMax = int((max(width, height)/10.0)**2)
     i = 0
@@ -77,7 +77,7 @@ def exploreArea(lowLeft, upRight, url):
         if (distance((robotRow, robotCol), centroid) > 1.0*cspace.pixpermeter):
             labelVisited(visitedGrid, centroid, diameter=int(gridResolution / 25))
 
-        frontiers = frontier.extractFrontiers(cspace.grid, gridResolution / 7, dist=2)
+        frontiers = frontier.extractFrontiers(cspace.grid, gridResolution / 8, dist=2)
         boundaries = frontier.sortFrontiers(frontiers, (robotRow, robotCol), cspace.grid, visitedGrid)
         scanAllAround(cspace, map)
         i += 1
