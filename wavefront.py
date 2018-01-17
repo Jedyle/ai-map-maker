@@ -50,9 +50,7 @@ class WaveFront:
         (xs, ys) = self.start
         current = self.start
         path = [current]
-        #print "Computing path..."
         if (self.wavegrid[xs][ys] <= 0) or (self.wavegrid[self.goal[0]][self.goal[1]] <= 0):
-            #print "No path from ", self.start, " to ", self.goal
             return []
         else:
             while(current != self.goal):

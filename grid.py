@@ -58,7 +58,6 @@ class Grid():
                 alpha = bearing - angle
                 if r < self.maxGridRange - 20*self.pixpermeter:
                     self.assignProba(point, r, alpha, scanToGrid)
-        print "Time scan : ", elapsed - time.time()
 
     def assignProba(self, point, r, alpha, s):
         """

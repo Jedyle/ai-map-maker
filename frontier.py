@@ -33,7 +33,7 @@ def isDoable(path, grid, diameter = 1):
 def biggestFrontier(frontlist):
     return max(frontlist, key=lambda a: len(a[0]))
 
-
+"""
 def sortFrontiers(frontlist, point, grid, visitedGrid):
     fronttuple = []
     for front in frontlist:
@@ -48,32 +48,16 @@ def sortFrontiers(frontlist, point, grid, visitedGrid):
             regularFront.append(bound)
     regularFront.extend(noGoFront)
     return regularFront
-
-"""
-def sortFrontiers(frontlist, point, grid, visitedGrid):
-    fronttuple = []
-    for front in frontlist:
-        fronttuple.append((computeCentroid(front, grid), front))
-    #frontiers = sorted(fronttuple, key=lambda front: (-distance(front[0], point) - len(front)))
-    frontiers = sorted(fronttuple, key=lambda front: (-distance(front[0], point) -len(front[1])))
-    noGoFront = []
-    regularFront = []
-    for (centre, bound) in frontiers :
-        if visitedGrid[centre[0]][centre[1]]:
-            noGoFront.append(bound)
-        else:
-            regularFront.append(bound)
-    regularFront.extend(noGoFront)
-    return regularFront
 """
 
-"""
+
 def sortFrontiers(frontlist, point, grid, noGoZones):
     fronttuple = []
     for front in frontlist:
         fronttuple.append((computeCentroid(front, grid), front))
-    #frontiers = sorted(fronttuple, key=lambda front: (-distance(front[0], point) - len(front)))
-    frontiers = sorted(fronttuple, key=lambda front: (-len(front)))
+    size = max(grid.shape[0], grid.shape[1])
+    frontiers = sorted(fronttuple, key=lambda front: (-distance(front[0], point)/size - len(front[1])/2*size))
+    #frontiers = sorted(fronttuple, key=lambda front: (-len(front)))
     noGoFront = []
     regularFront = []
     for (centre, bound) in frontiers :
@@ -87,7 +71,7 @@ def sortFrontiers(frontlist, point, grid, noGoZones):
             regularFront.append(bound)
     regularFront.extend(noGoFront)
     return regularFront
-"""
+
 
 
 def isCloseTo(centroid, pointlist, dist = 3.0):
@@ -150,7 +134,6 @@ def findFrontier(point, grid, dist = 1):
     neighbors = getAllNeighbors(point, grid.shape, diameter=dist)
     for (x,y) in neighbors:
         if grid[x][y] == True:
-            #print x, y
             frontier.extend(findFrontier((x,y), grid))
     return frontier
 
@@ -230,5 +213,11 @@ def computeCentroid(frontier, grid):
     n = len(frontier)
     xc = int(xc/n)
     yc = int(yc/n)
-    return findNearest((xc, yc), grid, state=EMPTY)
+    mindist = 8000 #infinity
+    (xce, yce) = (xc, yc)
+    for (x, y) in frontier:
+        if distance((xc, yc), (x, y)) < mindist:
+            mindist = distance((xc, yc), (x, y))
+            (xce, yce) = (x, y)
+    return findNearest((xce, yce), grid, state=EMPTY)
 

@@ -29,7 +29,7 @@ class PathFollowAlgorithm(object):
         self.position = (0, 0)
         self.lookahead_dist = 0.8
         self.pointIndex = 0
-        self.robot = Robot(url = url)
+        self.robot = Robot(url)
         self.collision_dist = 2.0
         self.finished = False
         self.tries = 0
@@ -50,8 +50,7 @@ class PathFollowAlgorithm(object):
 
     def avoidObstacle(self, breadth = 80, nbzones = 5, distmin = 5):
         self.tries += 1
-        print "Tries ", self.tries
-        if (self.tries > 10):
+        if (self.tries >= 10):
             self.finished = True
             self.robot.postSpeed(0,0)
             return
@@ -96,17 +95,15 @@ class PathFollowAlgorithm(object):
     Returns true if the robot reached the goal
     """
 
-    def isArrivedToPoint(self):
+    def isCloseToEndPoint(self):
         dist = distance(self.path[0], self.path[-1])
-        #print dist
-        return self.pointIndex == len(self.path) - 1 and distance(self.position, (self.path[len(self.path) - 1])) <= dist*0.1
+        return self.pointIndex == len(self.path) - 1 and distance(self.position, (self.path[len(self.path) - 1])) <= max(1,dist*0.1)
 
     """
     Follows the path which is specified in the file with name: <file_name>
     """
 
     def followPath(self, path):
-        print path
         self.path = path
         self.pointIndex = 0
         self.run()
@@ -163,7 +160,7 @@ class PurePursuit(PathFollowAlgorithm):
         self.lookahead_dist = 5.0 #0.8
         linear_speed = 4.0 #1.2
         self.robot.postSpeed(0, 0)
-        while (not self.isArrivedToPoint()) and (not self.finished):
+        while (not self.isCloseToEndPoint()) and (not self.finished):
             if self.is_collision():
                 self.robot.postSpeed(0.0, 0.0)
                 self.avoidObstacle()

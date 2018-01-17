@@ -27,7 +27,7 @@ class UnexpectedResponse(Exception):
     pass
 
 class Robot:
-    def __init__(self, url = 'localhost:50000'):
+    def __init__(self, url):
         self.MRDS_URL = url
         pass
 
